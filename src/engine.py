@@ -39,6 +39,7 @@ class Hand:
     def get_count(self, num):
         return self.hand[num - 1]
 
+
 class Player:
     def __init__(self, name):
         self.hand = Hand()
