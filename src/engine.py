@@ -39,7 +39,6 @@ class Hand:
     def get_count(self, num):
         return self.hand[num - 1]
 
-
 class Player:
     def __init__(self, name):
         self.hand = Hand()
@@ -49,10 +48,23 @@ class Player:
 
     def get_value(self, num, one_incl):
         return self.hand.get_value(num, one_incl)
-    
 
+class Game:
+    def __init__(self, a_name, b_name):
+        self.a = Player(a_name)
+        self.b = Player(b_name)
+        # action_list contains list of claims and actions
+        self.game_history = []
+        self.next_player = 0
 
-
+    def ask_action(self):
+        if self.next_player == 0:
+            action = self.a.get_action(self.game_history)
+        elif self.next_player == 1:
+            action = self.b.get_action(self.game_history)
+        
+        # alternate the next_player between 0 and 1
+        self.next_player = self.next_player + pow(-1, self.next_player)
 
 def main():
     p = Player('p1')
