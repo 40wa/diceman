@@ -8,7 +8,7 @@ def get_move_from_stdin(player_name):
     
     # accept BID or b or B, then c r incl
     bid_pattern = re.compile('[\s]*(BID|b|B)[\s]+([0-9])[\s]+([0-9])[\s]+(y|Y|n|N)[\s]*')
-    # accept DUOBT or d or D
+    # accept DOUBT or d or D
     doubt_pattern = re.compile('[\s]*(DOUBT|d|D)[\s]*')
     
     bid_match = bid_pattern.match(ipt)
