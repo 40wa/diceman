@@ -79,33 +79,41 @@ class Action:
                     + f'incl {"Y" if self.incl_one else "N"}>'
 
 class Game:
-    def __init__(self, a_name, b_name, manual=False):
-        self.a = Player(a_name)
-        self.b = Player(b_name)
+    def __init__(self, player_lim, manual=False):
+        #self.a = Player(a_name)
+        #self.b = Player(b_name)
+        #players stored in an array, referred to by their index
+        self.players = [Player(input("player {} name:\t".format(i))) for i in range(player_lim)]
         self.manual = manual
     
         # total number of players
-        self.player_lim = 2
+        self.player_lim = player_lim
         # action_list contains list of claims and actions
         self.game_history = []
         # integer denoting who is next to move
         self.next_player = 0
         # flag indicating whether rank "one" die have been used yet
         self.ones_used = False
+        # flag indicating whether or not game is over
+        self.game_over = False
 
     def game_loop(self):
-        game_over = False
-        while not game_over:
+        while not self.game_over:
             next_act = self.ask_action()
             self.game_history += [next_act]
             self.process_last_action()
+            self.check_doubts()
             self.rotate_player()
 
     def ask_action(self):
-        if self.next_player == 0:
-            action = self.a.get_action(self.game_history, self.manual)
-        elif self.next_player == 1:
-            action = self.b.get_action(self.game_history, self.manual)
+        print(self.players[self.next_player].hand)
+        action = self.players[self.next_player].get_action(self.game_history,self.manual)
+        # if self.next_player == 0:
+        #     print(self.a.hand)
+        #     action = self.a.get_action(self.game_history, self.manual)
+        # elif self.next_player == 1:
+        #     print(self.b.hand)
+        #     action = self.b.get_action(self.game_history, self.manual)
         return (self.next_player, action)
 
     # contains the move progression logic
@@ -113,7 +121,7 @@ class Game:
     # if there was a DOUBT
     def process_last_action(self):
         ult_player,ult_action = self.game_history[-1]
-        print(last_player, last_action)
+        print(ult_player, ult_action)
         
         # verify legality of move
         # we don't need to check out of bounds stuff because those can
@@ -132,7 +140,7 @@ class Game:
             # TODO: need to refactor whole system, and include a flag
             #       as to whether ones had been used before in the game
             if ult_action.incl_one:
-                if not ult_action.rank >= 4:
+                if not ult_action.count >= 4:
                     raise ValueError
             else:
                 pass
@@ -145,17 +153,46 @@ class Game:
     # showdown, by summing the values in all hands appropriately
     # return a tuple of data TODO not yet really defined
     def showdown(self):
-        pass
-
+        total_values = [0 for i in range(6)]
+        for p in self.players:
+            for i in range(6):
+                total_values[i] += p.hand.hand[i]
+        print("The totals are:")
+        print(total_values)
+        return total_values
+        
     # alternate the next_player between 0 and 1
     def rotate_player(self):
         self.next_player = (self.next_player + 1) % self.player_lim
 
     def validate_action(self):
-        pass
+        #check if the doubt that was just called was accurate
+        ult_player,ult_action = self.game_history[-1]
+        total_values = self.showdown()
+        num_rank = total_values[ult_action.rank-1]
+        if ult_action.rank != 1 and ult_action.incl_one:
+            num_rank += total_values[0]
+        #returns True if the bid was valid, False otherwise
+        return num_rank >= ult_action.count
+
+    def check_doubts(self):
+        #allow any player to call doubt immediately after a bid has been made
+        doubting_player = util.request_doubts(self.players[self.next_player].name,self.players)
+        if not doubting_player:
+            return
+        if self.validate_action():
+            print("you lose, {}".format(self.players[doubting_player].name))
+            #doubting_player loses something
+        else:
+            print("you win, {}".format(self.players[doubting_player].name))
+            #doubting_player wins something
+        self.game_over = True
+        
+
+        
 
 def main():
-    g = Game('a', 'b', manual=True)
+    g = Game(4, manual=True)
     g.game_loop()
 
 
