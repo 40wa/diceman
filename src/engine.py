@@ -73,7 +73,7 @@ class Action:
             self.incl_one = incl_one
         def __repr__(self):
             return f'<{self.__class__.__name__}: c {self.count},'\
-                    + f'r {self.val},'\
+                    + f'r {self.rank},'\
                     + f'incl {"Y" if self.incl_one else "N"}>'
 
 class Game:
@@ -91,7 +91,7 @@ class Game:
         while not game_over:
             next_act = self.ask_action()
             self.game_history += [next_act]
-            #self.process_move()
+            self.process_last_action()
             self.rotate_player()
 
     def ask_action(self):
@@ -101,8 +101,33 @@ class Game:
             action = self.b.get_action(self.game_history, self.manual)
         return (self.next_player, action)
 
-    def process_action(self):
-        last_player,last_action = self.game_history[-1]
+    # contains the move progression logic
+    # errors? if the move is inappropriate, and triggers the relevant checks
+    # if there was a DOUBT
+    def process_last_action(self):
+        ult_player,ult_action = self.game_history[-1]
+        print(last_player, last_action)
+        
+        # verify legality of move
+        # we don't need to check out of bounds stuff because those can
+        # be call DOUBT on, the system is self-regulating
+        
+        # we have certain checks for the very first move
+        if len(self.game_history) == 1:
+            # this is in case of only 2 players
+            # TODO: generalise to arbitrary number of agents
+            # TODO: need to refactor whole system, and include a flag
+            #       as to whether ones had been used before in the game
+            if ult_action.incl_one:
+                if not ult_action.rank >= 4:
+                    raise ValueError
+            else:
+                pass
+
+        # and other relevant checks thereafter
+        elif len(self.game_history) > 1:
+            pass
+
 
     # alternate the next_player between 0 and 1
     def rotate_player(self):
