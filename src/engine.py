@@ -15,7 +15,7 @@ class Hand:
             dice = [random.randint(1,6) for i in range(5)]
         
         # process into dice format
-        # ie a 5 long array, with counts for each die value
+        # ie a 6 long array, with counts for each die value
         ret = [0] * 6
         for d in dice:
             ret[d-1] += 1
@@ -49,10 +49,28 @@ class Player:
     def get_value(self, num, one_incl):
         return self.hand.get_value(num, one_incl)
 
+class Action:
+    class DOUBT:
+        def __init__(self):
+            pass
+        def __repr__(self):
+            return f'<{self.__class__.__name__}>'
+
+    class BID:
+        def __init__(self, count, val, incl_one):
+            self.count = count
+            self.val = val
+            self.incl_one = incl_one
+        def __repr__(self):
+            return f'<{self.__class__.__name__}: c {self.count},'\
+                    + f'f {self.val},'\
+                    + f'incl {"Y" if self.incl_one else "N"}>'
+
 class Game:
     def __init__(self, a_name, b_name):
         self.a = Player(a_name)
         self.b = Player(b_name)
+        self.player_lim = 2
         # action_list contains list of claims and actions
         self.game_history = []
         self.next_player = 0
@@ -64,10 +82,14 @@ class Game:
             action = self.b.get_action(self.game_history)
         
         # alternate the next_player between 0 and 1
-        self.next_player = self.next_player + pow(-1, self.next_player)
+        self.next_player = (self.next_player + 1) % self.player_lim
 
 def main():
-    p = Player('p1')
+    g = Game('a', 'b')
+    print(Action.BID(3,3,True))
+    print(Action.DOUBT())
+
+
 
 if __name__=="__main__":
     main()
