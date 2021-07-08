@@ -62,12 +62,14 @@ class Player:
 class Action:
     class DOUBT:
         def __init__(self):
+            self.action_type = 'DOUBT'
             pass
         def __repr__(self):
             return f'<{self.__class__.__name__}>'
 
     class BID:
         def __init__(self, count, rank, incl_one):
+            self.action_type = 'BID'
             self.count = count
             self.rank = rank 
             self.incl_one = incl_one
@@ -81,10 +83,15 @@ class Game:
         self.a = Player(a_name)
         self.b = Player(b_name)
         self.manual = manual
+    
+        # total number of players
         self.player_lim = 2
         # action_list contains list of claims and actions
         self.game_history = []
+        # integer denoting who is next to move
         self.next_player = 0
+        # flag indicating whether rank "one" die have been used yet
+        self.ones_used = False
 
     def game_loop(self):
         game_over = False
@@ -111,6 +118,12 @@ class Game:
         # verify legality of move
         # we don't need to check out of bounds stuff because those can
         # be call DOUBT on, the system is self-regulating
+
+        if ult_action.action_type == 'DOUBT':
+            if len(self.game_history) == 0:
+                raise ValueError
+            else:
+                penult_player, penult_action = self.game_history[-2]
         
         # we have certain checks for the very first move
         if len(self.game_history) == 1:
@@ -126,8 +139,13 @@ class Game:
 
         # and other relevant checks thereafter
         elif len(self.game_history) > 1:
+            # TODO
             pass
-
+    
+    # showdown, by summing the values in all hands appropriately
+    # return a tuple of data TODO not yet really defined
+    def showdown(self):
+        pass
 
     # alternate the next_player between 0 and 1
     def rotate_player(self):
