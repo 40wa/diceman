@@ -46,7 +46,7 @@ class Player:
         self.name = name
     def __repr__(self):
         return f'<{self.name}>: ' + str(self.hand)
-    def get_value(self, num, one_incl):
+    def get_hand_value(self, num, one_incl):
         return self.hand.get_value(num, one_incl)
     
     # Given the game history, produce the next action.
@@ -79,15 +79,13 @@ class Action:
                     + f'incl {"Y" if self.incl_one else "N"}>'
 
 class Game:
-    def __init__(self, player_lim, manual=False):
-        #self.a = Player(a_name)
-        #self.b = Player(b_name)
+    def __init__(self, total_players, manual=False):
         #players stored in an array, referred to by their index
-        self.players = [Player(input("player {} name:\t".format(i))) for i in range(player_lim)]
+        self.players = [Player(chr(ord('@')+1+i)) for i in range(total_players)]
         self.manual = manual
     
         # total number of players
-        self.player_lim = player_lim
+        self.total_players = total_players
         # action_list contains list of claims and actions
         self.game_history = []
         # integer denoting who is next to move
@@ -102,18 +100,10 @@ class Game:
             next_act = self.ask_action()
             self.game_history += [next_act]
             self.process_last_action()
-            self.check_doubts()
             self.rotate_player()
 
     def ask_action(self):
-        print(self.players[self.next_player].hand)
         action = self.players[self.next_player].get_action(self.game_history,self.manual)
-        # if self.next_player == 0:
-        #     print(self.a.hand)
-        #     action = self.a.get_action(self.game_history, self.manual)
-        # elif self.next_player == 1:
-        #     print(self.b.hand)
-        #     action = self.b.get_action(self.game_history, self.manual)
         return (self.next_player, action)
 
     # contains the move progression logic
@@ -140,10 +130,15 @@ class Game:
             # TODO: need to refactor whole system, and include a flag
             #       as to whether ones had been used before in the game
             if ult_action.incl_one:
-                if not ult_action.count >= 4:
-                    raise ValueError
+                if not ult_action.count >= self.total_players * 2:
+                    raise ValueError("Can't open with incl bid of count below {} in a {} person game!"\
+                            .format(self.total_players * 2, self.total_players))
             else:
-                pass
+                if not ult_action.count >= (self.total_players * 2) - 1:
+                    raise ValueError("Can't open with excl bid of count below {} in a {} person game!"\
+                            .format(self.total_players * 2 - 1, self.total_players))
+                    
+
 
         # and other relevant checks thereafter
         elif len(self.game_history) > 1:
@@ -160,10 +155,18 @@ class Game:
         print("The totals are:")
         print(total_values)
         return total_values
+
+    # get information of all hands
+    def dump_all_values(self, num, incl_one):
+        return [p.get_hand_value(num, incl_one) for p in self.players]
+
+    def get_game_value(self, num, incl_one):
+        return sum([p.get_hand_value(num, incl_one) for p in self.players])
+
         
     # alternate the next_player between 0 and 1
     def rotate_player(self):
-        self.next_player = (self.next_player + 1) % self.player_lim
+        self.next_player = (self.next_player + 1) % self.total_players
 
     def validate_action(self):
         #check if the doubt that was just called was accurate
@@ -192,7 +195,7 @@ class Game:
         
 
 def main():
-    g = Game(4, manual=True)
+    g = Game(2, manual=True)
     g.game_loop()
 
 
