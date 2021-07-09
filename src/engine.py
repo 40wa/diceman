@@ -49,9 +49,10 @@ class Hand:
         return self.hand
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, strat=None):
         self.hand = Hand()
         self.name = name
+        self.strat = strat
     def __repr__(self):
         return f'<{self.name}>: ' + str(self.hand)
     def get_hand_value(self, num, one_incl):
@@ -62,7 +63,7 @@ class Player:
     def get_action(self, game_history, manual=False):
         if manual:
             next_move = util.get_move_from_stdin(self.name)
-        else:
+        elif strat is not None:
             raise ValueError
         return next_move
 
@@ -210,7 +211,6 @@ class Game:
 def main():
     g = Game(2, manual=True)
     g.display_all_hands()
-
     g.game_loop()
 
 
