@@ -6,20 +6,20 @@ import re
 def get_move_from_stdin(player_name):
     ipt = input('Specify (' + player_name + ') move: ')
     
-    # accept BID or b or B, then c r incl
-    bid_pattern = re.compile('[\s]*(BID|b|B)[\s]+([0-9])[\s]+([0-9])[\s]+(y|Y|n|N)[\s]*')
+    # accept c r incl
+    bid_pattern = re.compile('[\s]*([0-9]+)[\s]+([0-9]+)[\s]+(y|Y|n|N)[\s]*')
     # accept DOUBT or d or D
-    # or press X to doubt
-    doubt_pattern = re.compile('[\s]*(DOUBT|d|D|X)[\s]*')
+    # or press x or X to doubt
+    doubt_pattern = re.compile('[\s]*(DOUBT|d|D|x|X)[\s]*')
     
     bid_match = bid_pattern.match(ipt)
     doubt_match = doubt_pattern.match(ipt)
     
     if bid_match:
         #I think these were strings, they're now ints
-        count = int(bid_match[2])
-        rank = int(bid_match[3])
-        incl = True if ((bid_match[4] == 'y') or (bid_match[4] == 'Y')) else False
+        count = int(bid_match[1])
+        rank = int(bid_match[2])
+        incl = True if ((bid_match[3] == 'y') or (bid_match[3] == 'Y')) else False
         return Action.BID(count, rank, incl)
     elif doubt_match:
         return Action.DOUBT()
@@ -52,4 +52,15 @@ def request_doubts(player_name, players):
             if ipt != player_name:
                 return i
     request_doubts(player_name,players)
-    
+   
+def display_showdown_result(showdown_res):
+    print('======> Showdown result <======')
+    print('Doubter:', showdown_res['doubter'])
+    print('Defendant:', showdown_res['defendant'])
+    if showdown_res['challenge_succeeded']:
+        print('The challenge succeeded!')
+    else:
+        print('The challenge failed!')
+    print('Last bid: {}'.format(showdown_res['penult_bid']))
+    print('True value: {}; margin {}'\
+            .format(showdown_res['hands_value_total'], showdown_res['offset']))
